@@ -1,68 +1,41 @@
 /**
  * Room 1 — Tip of the Iceberg
- * Dig through half-true layers until an uncomfortable-but-funny truth unlocks the door.
+ * Pure audio-visual: dig → colder/darker/quieter ice; door unlocks with soft cold glow + tiny click.
  */
 export const tipOfTheIceberg = {
   id: "tip-of-the-iceberg",
   title: "Tip of the Iceberg",
 
-  layers: [
-    {
-      depth: "Surface",
-      caption: "Everything is fine. Look how shiny and small this problem is.",
-      narrator: "Ah yes. The reassuring bit that fits on a postcard.",
-    },
-    {
-      depth: "Slightly colder",
-      caption: "Okay, there might be a little more under here. Still manageable. Probably.",
-      narrator: "You are digging. I am narrating. Neither of us is qualified.",
-    },
-    {
-      depth: "Noticeably wet",
-      caption: "The tip was marketing. The rest is logistics, feelings, and that email you haven't answered.",
-      narrator: "Fascinating. The ice appears to contain unresolved threads.",
-    },
-    {
-      depth: "Uncomfortable truth",
-      caption: "Most of what you call 'the tip' is you standing on a submerged warehouse of things you hoped were optional.",
-      narrator: "There it is. Awkward. Accurate. Door-shaped, somehow.",
-    },
-  ],
+  /** Four digs to unlock — depth reads only as ice + vignette + muffled audio */
+  maxLayers: 4,
 
   setup(ctx) {
     this._layer = 0;
     this._solved = false;
+    this._ctx = ctx;
 
-    ctx.say(
-      "A tiny tip of ice. A locked door. Metaphorically speaking, you are already wet."
-    );
+    ctx.setDepth(0);
 
     const ice = ctx.addEntity({
       id: "ice",
-      x: 38,
-      y: 62,
+      x: 42,
+      y: 60,
       className: "iceberg",
-      label: "ice tip",
-      title: "Tip of the iceberg — click to dig",
     });
+
+    const mass = document.createElement("div");
+    mass.className = "ice-mass";
+    ice.appendChild(mass);
 
     const door = ctx.addEntity({
       id: "door",
       x: 78,
       y: 48,
       className: "door locked",
-      label: "door",
-      title: "Locked. Obviously.",
     });
 
-    ctx.addOverlay("layer-panel", `
-      <div class="depth"></div>
-      <div class="caption"></div>
-    `);
-
-    ctx.addOverlay("depth-meter", `<div class="fill"></div>`);
-
     this._ice = ice;
+    this._mass = mass;
     this._door = door;
   },
 
@@ -73,15 +46,12 @@ export const tipOfTheIceberg = {
     }
     if (id === "door") {
       if (this._solved) {
-        ctx.say("The door yields. You may leave. Or stay. Leaving is the point.");
         ctx.complete();
       } else {
-        const quips = [
-          "Locked. The ice knows something you don't. Dig.",
-          "Doors open for truths, not vibes.",
-          "It remains shut. Rude, but thematic.",
-        ];
-        ctx.say(quips[Math.min(this._layer, quips.length - 1)]);
+        ctx.sfx.knock();
+        this._door.classList.remove("ack");
+        void this._door.offsetWidth;
+        this._door.classList.add("ack");
       }
     }
   },
@@ -92,42 +62,42 @@ export const tipOfTheIceberg = {
 
   _dig(ctx) {
     const ice = this._ice;
+    ice.classList.remove("digging");
+    void ice.offsetWidth;
     ice.classList.add("digging");
-    setTimeout(() => ice.classList.remove("digging"), 400);
+    setTimeout(() => ice.classList.remove("digging"), 350);
 
-    if (this._layer >= this.layers.length) {
-      ctx.say("You've excavated the metaphor. The door is waiting. Try not to look proud.");
+    if (this._layer >= this.maxLayers) {
+      // already fully dug — soft muffled tap only
+      ctx.sfx.dig(this.maxLayers - 1);
       return;
     }
 
-    const layer = this.layers[this._layer];
+    const layerIndex = this._layer; // 0..3 for this dig
     this._layer += 1;
 
-    const panel = ctx.el("layer-panel");
-    panel.querySelector(".depth").textContent = layer.depth;
-    panel.querySelector(".caption").textContent = layer.caption;
-    panel.classList.add("visible");
+    ctx.sfx.dig(layerIndex);
+    ctx.spawnFrost(ice);
+    ctx.setDepth(this._layer);
 
-    const fill = ctx.el("depth-meter").querySelector(".fill");
-    fill.style.height = `${(this._layer / this.layers.length) * 100}%`;
+    // Ice grows colder / larger / submerged mass expands
+    const scale = 1 + this._layer * 0.22;
+    ice.style.width = `${36 * scale}px`;
+    ice.style.height = `${20 * scale}px`;
+    const light = 78 - this._layer * 12;
+    const mid = 68 - this._layer * 11;
+    ice.style.background = `linear-gradient(180deg, hsl(200, 35%, ${light}%), hsl(205, 40%, ${mid}%))`;
+    ice.style.boxShadow = `0 3px 10px rgba(60,75,95,0.12), 0 0 ${6 + this._layer * 4}px rgba(80,120,160,${0.1 + this._layer * 0.08})`;
 
-    // Ice grows colder / larger as you dig
-    const scale = 1 + this._layer * 0.15;
-    ice.style.width = `${48 * scale}px`;
-    ice.style.height = `${28 * scale}px`;
-    ice.style.background = `linear-gradient(180deg, #eef6fb, hsl(200, 45%, ${72 - this._layer * 10}%))`;
+    this._mass.style.height = `${12 + this._layer * 14}px`;
+    this._mass.style.opacity = String(0.35 + this._layer * 0.15);
 
-    ctx.say(layer.narrator);
-
-    if (this._layer >= this.layers.length) {
+    if (this._layer >= this.maxLayers) {
       this._solved = true;
       this._door.classList.remove("locked");
       this._door.classList.add("unlocked");
-      this._door.title = "Unlocked — walk over and click";
-      this._door.querySelector(".label").textContent = "door (open)";
-      setTimeout(() => {
-        ctx.say("The door softens. You've found enough of the iceberg. Go on.");
-      }, 900);
+      // tiny unlock click + soft cold glow (CSS), no green / no label
+      setTimeout(() => ctx.sfx.unlock(), 280);
     }
   },
 };

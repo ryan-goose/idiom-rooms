@@ -8,28 +8,17 @@
 </head>
 <body>
   <div id="app">
-    <header id="hud">
-      <h1 id="room-title">Idiom Rooms</h1>
-      <p id="hint">Click the floor to walk. Click things to poke them.</p>
-    </header>
-
     <main id="stage" aria-label="Game room">
-      <div id="floor"></div>
-      <div id="player" title="You"></div>
+      <div id="void" aria-hidden="true"></div>
+      <div id="cold-vignette" aria-hidden="true"></div>
+      <div id="floor" aria-hidden="true"></div>
+      <div id="player" aria-hidden="true"></div>
+      <div id="click-pulse" aria-hidden="true"></div>
     </main>
 
-    <aside id="narrator" aria-live="polite">
-      <span class="label">Narrator</span>
-      <p id="narrator-text">Welcome. There is a door. You will want the door.</p>
-    </aside>
-
-    <div id="end-screen" class="hidden" role="dialog" aria-modal="true">
-      <div class="card">
-        <h2>Demo complete</h2>
-        <p>You literalized the idiom. More rooms coming.</p>
-        <p class="soft">Room 1 of 8 — Tip of the Iceberg</p>
-        <button id="replay-btn" type="button">Replay room</button>
-      </div>
+    <div id="end-screen" class="hidden" role="dialog" aria-modal="true" aria-label="Complete">
+      <div class="end-bloom" aria-hidden="true"></div>
+      <button id="replay-btn" type="button" aria-label="Replay"></button>
     </div>
   </div>
 

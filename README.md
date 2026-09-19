@@ -1,8 +1,8 @@
 # Idiom Rooms
 
-A small philosophical-humor puzzle demo. Click to walk, click objects to interact, literalize the idiom, leave through the door.
+Tiny audio-visual idiom rooms. Click to walk, click things to interact. No on-screen text — meaning comes from image, color, scale, and sound.
 
-**Demo:** Room 1 only — *Tip of the Iceberg*.
+**Demo:** Room 1 — Tip of the Iceberg.
 
 ## Play
 
@@ -16,58 +16,41 @@ python3 -m http.server 8080
 
 Open http://localhost:8080
 
-(Modules need a local server — opening `index.html` as a file may fail.)
+(Modules need a local server.)
 
-## How to play (Room 1)
+## Room 1 loop
 
-1. Click the floor to walk.
-2. Click the ice tip to **dig** — each dig reveals a colder, half-true caption.
-3. After the uncomfortable truth, the door unlocks.
-4. Click the door to finish the demo.
+1. Click the pale void floor to walk.
+2. Click the ice tip to dig — each dig grows colder, darker, quieter.
+3. After four digs the door takes a soft cold glow.
+4. Click the door to finish. Replay via the glowing control, Esc, or click outside.
 
-## Project layout
+## Layout
 
 ```
 index.html
 css/style.css
-js/game.js              # shared engine + Room API
+js/game.js              # shared engine + Room API + Web Audio
 js/rooms/
   tip-of-the-iceberg.js # Room 1
 ```
 
-### Room API (for future rooms)
-
-Each room exports an object:
+### Room API
 
 | Field | Role |
 |--------|------|
 | `id` | slug |
-| `title` | HUD title |
-| `setup(ctx)` | spawn entities / overlays |
-| `onInteract(id, ctx)` | handle clicks on entities |
-| `isSolved()` | whether the door should open |
+| `title` | metadata only (not shown in-game) |
+| `setup(ctx)` | spawn entities |
+| `onInteract(id, ctx)` | handle entity clicks |
+| `isSolved()` | unlock state |
 
-`ctx` helpers: `say(text)`, `addEntity(...)`, `addOverlay(id, html)`, `complete()`, `el(id)`.
+`ctx`: `addEntity`, `addOverlay`, `setDepth`, `spawnFrost`, `sfx`, `complete`, `el`, `stage`.
 
 ## GitHub Pages
 
-Pages should serve from the `main` branch **root** (`/`).
-
-If the site is not live yet:
-
-1. Repo → **Settings** → **Pages**
-2. Source: **Deploy from a branch**
-3. Branch: `main` / folder: `/ (root)` → Save
-
-Or via CLI (legacy build):
-
-```bash
-gh api -X POST repos/ryan-goose/idiom-rooms/pages \
-  -f build_type=legacy \
-  -f source[branch]=main \
-  -f source[path]=/
-```
+Serves from `main` branch root (`/`).
 
 ## License
 
-MIT — do what you want; attribution appreciated.
+MIT
